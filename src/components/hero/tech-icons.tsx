@@ -51,11 +51,17 @@ function IconHTML() {
 function IconCSS() {
   return (
     <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      <rect width="32" height="32" rx="6" fill="#264DE4" />
-      <path d="M7 5l1.8 20 7.2 2 7.2-2L25 5H7Z" fill="#264DE4" />
-      <path d="M16 25.4V7H7l1.7 18.4L16 27.5v-2.1Z" fill="#2965F1" />
-      <path d="M16 13.4h4.8l-.3 3.5-4.5 1.3V22l5.4-1.5.7-8.5H16v1.4Z" fill="#fff" />
-      <path d="M16 13.4H11.2l.3-3.2h4.5V13.4ZM16 18.2l-4.2-1.1-.3-3.1H9.9l.5 5.7L16 22v-3.8Z" fill="#EBEBEB" />
+      <rect width="32" height="32" rx="6" fill="#1e40af" />
+      <rect width="32" height="32" rx="6" fill="url(#css-bg)" />
+      <defs>
+        <linearGradient id="css-bg" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#2563eb" />
+          <stop offset="1" stopColor="#1d4ed8" />
+        </linearGradient>
+      </defs>
+      <path d="M8 6h16l-1.5 16.5L16 25l-6.5-2.5L8 6Z" fill="#3b82f6" opacity="0.3" />
+      <path d="M16 22.8l4.8-1.3 1-11.5H10.2l.3 3h8.3l-.2 2.2h-8L11 18h6.8l-.4 3.5L16 22.8Z" fill="white" />
+      <path d="M11 15.4h5l-.3 2.8-1.8.5-1.7-.5-.1-1.5H10l.2 2.8 3.8 1.1 3.8-1.1.5-5.4h-7.1L11 12h8.5l.3-3H9.5L11 15.4Z" fill="rgba(255,255,255,0.5)" />
     </svg>
   );
 }
@@ -72,11 +78,20 @@ function IconTS() {
 function IconReact() {
   return (
     <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      <rect width="32" height="32" rx="6" fill="#20232A" />
-      <ellipse cx="16" cy="16" rx="2.5" ry="2.5" fill="#61DAFB" />
-      <ellipse cx="16" cy="16" rx="11" ry="4.2" stroke="#61DAFB" strokeWidth="1.3" fill="none" />
-      <ellipse cx="16" cy="16" rx="11" ry="4.2" stroke="#61DAFB" strokeWidth="1.3" fill="none" transform="rotate(60 16 16)" />
-      <ellipse cx="16" cy="16" rx="11" ry="4.2" stroke="#61DAFB" strokeWidth="1.3" fill="none" transform="rotate(120 16 16)" />
+      <rect width="32" height="32" rx="6" fill="#0f1923" />
+      <rect width="32" height="32" rx="6" fill="url(#react-bg)" opacity="0.6" />
+      <defs>
+        <radialGradient id="react-bg" cx="50%" cy="50%" r="60%">
+          <stop stopColor="#0ea5e9" stopOpacity="0.3" />
+          <stop offset="1" stopColor="#0f1923" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+      {/* Core */}
+      <circle cx="16" cy="16" r="3" fill="#61DAFB" />
+      {/* Three orbits */}
+      <ellipse cx="16" cy="16" rx="12" ry="4.5" stroke="#61DAFB" strokeWidth="1.5" fill="none" />
+      <ellipse cx="16" cy="16" rx="12" ry="4.5" stroke="#61DAFB" strokeWidth="1.5" fill="none" transform="rotate(60 16 16)" />
+      <ellipse cx="16" cy="16" rx="12" ry="4.5" stroke="#61DAFB" strokeWidth="1.5" fill="none" transform="rotate(120 16 16)" />
     </svg>
   );
 }
@@ -122,9 +137,28 @@ function IconSQL() {
 function IconPHP() {
   return (
     <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      <rect width="32" height="32" rx="6" fill="#6181B6" />
-      <ellipse cx="16" cy="16" rx="13" ry="6.5" fill="#8892BF" />
-      <path d="M8 14h2.5c1.5 0 2.5.6 2.5 2s-1 2-2.5 2H9.5L9 20H8l1-6Zm1.5 3h.8c.8 0 1.2-.3 1.2-.9s-.4-.9-1.2-.9h-.5l-.3 1.8ZM14 14h1l-.5 3h.2l2-3h1.2l-.9 6h-1l.5-3h-.2l-2 3h-1.2l.9-6ZM19 14h2.5c1.5 0 2.5.6 2.5 2s-1 2-2.5 2H20l-.5 2h-1l1-6Zm1.5 3h.8c.8 0 1.2-.3 1.2-.9s-.4-.9-1.2-.9h-.5l-.3 1.8Z" fill="white" />
+      <rect width="32" height="32" rx="6" fill="url(#php-bg)" />
+      <defs>
+        <linearGradient id="php-bg" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#6366f1" />
+          <stop offset="1" stopColor="#4f46e5" />
+        </linearGradient>
+      </defs>
+      {/* PHP pill shape */}
+      <ellipse cx="16" cy="16" rx="12" ry="6" fill="#7c86c7" opacity="0.4" />
+      <ellipse cx="16" cy="16" rx="12" ry="6" stroke="#a5b4fc" strokeWidth="1" fill="none" />
+      {/* PHP text lettering */}
+      <text
+        x="16" y="20"
+        textAnchor="middle"
+        fontSize="8.5"
+        fontWeight="bold"
+        fontFamily="monospace"
+        fill="white"
+        letterSpacing="0.5"
+      >
+        PHP
+      </text>
     </svg>
   );
 }
@@ -207,12 +241,12 @@ export const TECH_ICONS: TechIcon[] = [
   { id: "javascript",   label: "JavaScript",   description: "Dynamic scripting language of the web",         color: "#F7DF1E", Icon: IconJS },
   { id: "java",         label: "Java",          description: "Robust, object-oriented JVM language",          color: "#EA2D2E", Icon: IconJava },
   { id: "html",         label: "HTML5",         description: "Semantic structure of the web",                 color: "#E34C26", Icon: IconHTML },
-  { id: "css",          label: "CSS3",          description: "Cascading styles, layouts & animations",        color: "#2965F1", Icon: IconCSS },
+  { id: "css",          label: "CSS3",          description: "Cascading styles, layouts & animations",        color: "#60a5fa", Icon: IconCSS },
   // ── Ring 2 ────────────────────────────────────────────────────────────────
   { id: "typescript",   label: "TypeScript",    description: "Typed superset of JavaScript",                  color: "#3178C6", Icon: IconTS },
   { id: "react",        label: "React",         description: "Component-based UI library by Meta",            color: "#61DAFB", Icon: IconReact },
   { id: "python",       label: "Python",        description: "Versatile language for data & backend",         color: "#FFD43B", Icon: IconPython },
-  { id: "php",          label: "PHP",           description: "Server-side scripting language",                color: "#8892BF", Icon: IconPHP },
+  { id: "php",          label: "PHP",           description: "Server-side scripting language",                color: "#a5b4fc", Icon: IconPHP },
   // ── Ring 3 ────────────────────────────────────────────────────────────────
   { id: "react-native", label: "React Native",  description: "Cross-platform mobile apps with React",         color: "#61DAFB", Icon: IconReactNative },
   { id: "mongodb",      label: "MongoDB",       description: "NoSQL document database",                       color: "#13AA52", Icon: IconMongoDB },
@@ -222,5 +256,5 @@ export const TECH_ICONS: TechIcon[] = [
   { id: "nodejs",       label: "Node.js",       description: "JavaScript runtime for the server",             color: "#539E43", Icon: IconNodeJS },
   { id: "docker",       label: "Docker",        description: "Container platform for consistent deployments", color: "#1D63ED", Icon: IconDocker },
   { id: "tailwind",     label: "Tailwind CSS",  description: "Utility-first CSS framework",                   color: "#38BDF8", Icon: IconTailwind },
-  { id: "github",       label: "GitHub",        description: "Git hosting & collaboration platform",          color: "#e2e8f0", Icon: IconGitHub },
+  { id: "github",       label: "GitHub",        description: "Git hosting & collaboration platform",          color: "#c0c8d8", Icon: IconGitHub },
 ];

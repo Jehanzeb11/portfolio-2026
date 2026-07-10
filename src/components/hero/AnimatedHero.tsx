@@ -26,9 +26,7 @@ import {
   motion,
   AnimatePresence,
   useReducedMotion,
-  animate,
   useMotionValue,
-  useTransform,
 } from "motion/react";
 import type { Variants } from "motion/react";
 import Link from "next/link";
@@ -160,7 +158,9 @@ function FloatingIcon({
   const x = useMotionValue(0);
   const y = useMotionValue(0);
 
-  // Register this icon's updater with the parent's animation loop
+  // Track current pixel position so tooltip can flip above/below
+  const posRef = useRef({ x: 0, y: 0 });
+
   const updatePos = useCallback(() => {
     if (reducedMotion) return;
     const t = timeRef.current;
@@ -168,17 +168,18 @@ function FloatingIcon({
     const ny = (params.cy / 100) * containerH + Math.sin(t * params.wy + params.py) * params.ay;
     x.set(nx);
     y.set(ny);
+    posRef.current = { x: nx, y: ny };
   }, [reducedMotion, params, containerW, containerH, x, y, timeRef]);
 
-  // Kick off position on first render
   useEffect(() => {
     if (reducedMotion) {
-      x.set((params.cx / 100) * containerW);
-      y.set((params.cy / 100) * containerH);
+      const sx = (params.cx / 100) * containerW;
+      const sy = (params.cy / 100) * containerH;
+      x.set(sx);
+      y.set(sy);
+      posRef.current = { x: sx, y: sy };
       return;
     }
-    // Drive from RAF loop via a subscription
-    // We attach this updater to a shared tick via a custom event
     const handler = () => updatePos();
     window.addEventListener("hero-tick", handler);
     return () => window.removeEventListener("hero-tick", handler);
@@ -186,28 +187,33 @@ function FloatingIcon({
 
   const dimmed = isAnySpotlit && !isSpotlit;
 
+  // Show tooltip below if icon is in the top 30% of the container
+  const tooltipAbove = posRef.current.y > containerH * 0.30;
+
   return (
     <motion.div
       className="absolute"
       style={{
         x,
         y,
-        // Translate so the icon is centred on its position
         translateX: "-50%",
         translateY: "-50%",
         width: params.size,
         height: params.size,
-        zIndex: isSpotlit ? 30 : 10,
+        zIndex: isSpotlit ? 30 : hovered ? 20 : 10,
       }}
       animate={
         dimmed
           ? { opacity: 0.08, scale: 0.8 }
-          : { opacity: params.opacity, scale: 1 }
+          : hovered || isSpotlit
+            ? { opacity: 1, scale: 1 }          // always full opacity on interaction
+            : { opacity: params.opacity, scale: 1 }
       }
-      transition={{ duration: 0.3 }}
+      transition={{ duration: 0.25 }}
     >
       <motion.button
-        className="relative h-full w-full"
+        className="relative h-full w-full cursor-pointer"
+        /* Tilt + scale on hover/focus — applies to ALL icons */
         whileHover={reducedMotion ? {} : { scale: 1.35, rotateY: 18, rotateX: -10 }}
         whileFocus={reducedMotion ? {} : { scale: 1.35, rotateY: 18, rotateX: -10 }}
         transition={{ type: "spring", stiffness: 440, damping: 22 }}
@@ -224,23 +230,42 @@ function FloatingIcon({
           filter: isSpotlit
             ? `drop-shadow(0 0 12px ${icon.color}) drop-shadow(0 0 28px ${icon.color}88)`
             : hovered
-              ? `drop-shadow(0 0 8px ${icon.color}88)`
-              : undefined,
+              ? `drop-shadow(0 0 10px ${icon.color}cc)`
+              : `drop-shadow(0 2px 6px rgba(0,0,0,0.5))`,
         }}
       >
+        {/* Hover glow ring — visible on ALL icons when hovered */}
+        {(hovered || isSpotlit) && (
+          <motion.span
+            initial={{ opacity: 0, scale: 0.7 }}
+            animate={{ opacity: 1, scale: 1.18 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="pointer-events-none absolute inset-0 rounded-2xl"
+            style={{
+              boxShadow: `0 0 0 2px ${icon.color}88, 0 0 20px ${icon.color}44`,
+              borderRadius: "16px",
+            }}
+            aria-hidden="true"
+          />
+        )}
+
         {/* Icon badge */}
         <span
           className="block h-full w-full overflow-hidden rounded-2xl"
           style={{
             boxShadow: isSpotlit
               ? `0 0 0 2px ${icon.color}, 0 8px 32px rgba(0,0,0,0.6)`
-              : `0 4px 16px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.07)`,
+              : hovered
+                ? `0 0 0 1.5px ${icon.color}66, 0 8px 24px rgba(0,0,0,0.5)`
+                : `0 4px 16px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.07)`,
+            transition: reducedMotion ? "none" : "box-shadow 0.2s ease",
           }}
         >
           <icon.Icon />
         </span>
 
-        {/* Tooltip */}
+        {/* Tooltip — flips above/below based on icon position */}
         <AnimatePresence>
           {showTooltip && (
             <motion.div
@@ -250,14 +275,32 @@ function FloatingIcon({
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="pointer-events-none absolute bottom-[calc(100%+10px)] left-1/2 z-50 -translate-x-1/2 whitespace-nowrap"
+              className="pointer-events-none absolute left-1/2 z-50 -translate-x-1/2 whitespace-nowrap"
+              style={
+                tooltipAbove
+                  ? { bottom: "calc(100% + 12px)" }
+                  : { top: "calc(100% + 12px)" }
+              }
             >
+              {/* Caret above tooltip when tooltip is below icon */}
+              {!tooltipAbove && (
+                <div
+                  className="mx-auto mb-0 h-0 w-0"
+                  style={{
+                    borderLeft:   "5px solid transparent",
+                    borderRight:  "5px solid transparent",
+                    borderBottom: "5px solid rgba(24,24,27,0.97)",
+                  }}
+                  aria-hidden="true"
+                />
+              )}
+
               <div
-                className="rounded-xl border bg-zinc-900/95 px-3 py-2 text-center shadow-2xl backdrop-blur-md"
+                className="rounded-xl border bg-zinc-900/97 px-3 py-2 text-center shadow-2xl backdrop-blur-md"
                 style={{
                   minWidth: 132,
-                  borderColor: `${icon.color}40`,
-                  boxShadow: `0 8px 32px rgba(0,0,0,0.5), 0 0 16px ${icon.color}22`,
+                  borderColor: `${icon.color}50`,
+                  boxShadow: `0 8px 32px rgba(0,0,0,0.6), 0 0 20px ${icon.color}22`,
                 }}
               >
                 <p className="text-xs font-bold" style={{ color: icon.color }}>
@@ -267,14 +310,19 @@ function FloatingIcon({
                   {icon.description}
                 </p>
               </div>
-              <div
-                className="mx-auto h-0 w-0"
-                style={{
-                  borderLeft: "5px solid transparent",
-                  borderRight: "5px solid transparent",
-                  borderTop: "5px solid rgba(24,24,27,0.95)",
-                }}
-              />
+
+              {/* Caret below tooltip when tooltip is above icon */}
+              {tooltipAbove && (
+                <div
+                  className="mx-auto mt-0 h-0 w-0"
+                  style={{
+                    borderLeft:  "5px solid transparent",
+                    borderRight: "5px solid transparent",
+                    borderTop:   "5px solid rgba(24,24,27,0.97)",
+                  }}
+                  aria-hidden="true"
+                />
+              )}
             </motion.div>
           )}
         </AnimatePresence>
@@ -285,9 +333,10 @@ function FloatingIcon({
 
 // ─── AnimatedHero ─────────────────────────────────────────────────────────────
 
+
 export function AnimatedHero({
   icons = TECH_ICONS,
-  title = "Your Name",
+  title = "Jehanzeb Siddiqui",
   subtitle = "Senior frontend engineer crafting high-performance web experiences with React, TypeScript, and WebGL. Open to new opportunities.",
   ctaPrimary   = { label: "View my work",  href: "/work"    },
   ctaSecondary = { label: "Get in touch",  href: "/contact" },
@@ -318,7 +367,7 @@ export function AnimatedHero({
     let last = 0;
     let raf: number;
     function tick(t: number) {
-      timeRef.current += Math.min((t - last) / 1000, 0.05);
+      timeRef.current += Math.min((t - last) / 500, 0.05);
       last = t;
       window.dispatchEvent(new Event("hero-tick"));
       raf = requestAnimationFrame(tick);
@@ -431,23 +480,23 @@ export function AnimatedHero({
       </AnimatePresence>
 
       {/* ── Hero text content ── */}
-      <div className="relative z-20 mx-auto w-full max-w-7xl px-6 py-32 lg:py-0 lg:pl-16">
+      {/* <div className="relative z-20 mx-auto w-full px-6 py-32 lg:py-0 lg:pl-16 flex justify-center text-center">
         <motion.div
           variants={staggerContainer}
           initial="hidden"
           animate="visible"
-          className="flex max-w-2xl flex-col items-start"
+          className="flex max-w-6xl flex-col items-center justify-center gap-3"
         >
           <motion.p
             variants={fadeUp}
-            className="mb-3 font-mono text-sm uppercase tracking-[0.22em] text-indigo-400"
+            className="mb-3 font-mono text-sm text-center uppercase tracking-[0.22em] text-indigo-400"
           >
             Hello, I&apos;m
           </motion.p>
 
           <motion.h1
             variants={fadeUp}
-            className="mb-5 text-6xl font-extrabold leading-[1.05] tracking-tight text-white sm:text-7xl xl:text-8xl"
+            className="mb-5 text-center text-6xl font-extrabold leading-[1.05] tracking-tight text-white sm:text-7xl xl:text-8xl"
             style={{ textShadow: "0 0 80px rgba(99,102,241,0.35)" }}
           >
             {title}
@@ -455,7 +504,7 @@ export function AnimatedHero({
 
           <motion.p
             variants={fadeUp}
-            className="mb-10 max-w-lg text-lg leading-relaxed text-zinc-400"
+            className="mb-10 max-w-lg text-lg text-center leading-relaxed text-zinc-400"
           >
             {subtitle}
           </motion.p>
@@ -479,7 +528,7 @@ export function AnimatedHero({
             Hover any icon · Click to spotlight · Esc to dismiss
           </motion.p>
         </motion.div>
-      </div>
+      </div> */}
 
       {/* ── Scroll cue ── */}
       <motion.div
