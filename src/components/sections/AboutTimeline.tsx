@@ -22,11 +22,10 @@ function TimelineEntry({
     >
       {/* dot */}
       <span
-        className={`absolute left-0 top-1.5 h-3 w-3 rounded-full border-2 ${
-          item.type === "work"
+        className={`absolute left-0 top-1.5 h-3 w-3 rounded-full border-2 ${item.type === "work"
             ? "border-indigo-500 bg-indigo-500"
             : "border-zinc-400 bg-transparent"
-        }`}
+          }`}
       />
       {/* connector line — hidden on last child */}
       <span className="absolute left-[5px] top-4 h-full w-px bg-zinc-200 dark:bg-zinc-700" />
@@ -65,10 +64,8 @@ export function AboutTimeline() {
               Who I am
             </h2>
             <p className="text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
-              I&apos;m a senior frontend engineer with 6+ years of experience
-              building scalable, accessible, and visually compelling web
-              products. I specialise in React ecosystems, real-time interfaces,
-              and creative WebGL/Three.js work.
+              I&apos; am FullStack Developer with 3+ years of experience building scalable web and mobile application susing the MERN
+              stack(MongoDB,Express.js,React.js,Node.js). Proficient in TypeScript, Next.js, ReactNative, and ElasticSearch. Proven track record delivering full-stack portals, projectmanagementsystems, and socialmedia platforms in fast-paced production environments. Open to remote and On-site opportunities.
             </p>
           </motion.div>
 

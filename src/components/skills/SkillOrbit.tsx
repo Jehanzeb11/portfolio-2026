@@ -63,9 +63,9 @@ const CATEGORY_META: Record<
   { color: string; glow: string; label: string; priority: number }
 > = {
   frontend: { color: "#818cf8", glow: "#6366f133", label: "Frontend",  priority: 0 },
-  "3d":     { color: "#34d399", glow: "#10b98133", label: "3D / WebGL", priority: 1 },
-  backend:  { color: "#fb923c", glow: "#f9731633", label: "Backend",    priority: 2 },
-  tools:    { color: "#e879f9", glow: "#d946ef33", label: "Tools",      priority: 3 },
+  backend:  { color: "#fb923c", glow: "#f9731633", label: "Backend",    priority: 1 },
+  tools:    { color: "#e879f9", glow: "#d946ef33", label: "Tools",      priority: 2 },
+  "3d":     { color: "#34d399", glow: "#10b98133", label: "3D / WebGL", priority: 3 },
 };
 
 /** Star body radius is proportional to skill level */
@@ -519,10 +519,7 @@ export function SkillOrbit({
     <section
       ref={containerRef}
       className="skill-orbit-section relative flex w-full items-center justify-center overflow-hidden rounded-2xl bg-zinc-950"
-      style={{
-        /* Responsive height: tall on desktop, more square on mobile */
-        minHeight: "clamp(480px, 75vw, 680px)",
-      }}
+      style={{ height: "clamp(480px, 75vw, 680px)" }}
       aria-label={`${title} — interactive skill visualization`}
     >
       {/* ── Space gradient backdrop ── */}
@@ -546,9 +543,10 @@ export function SkillOrbit({
       {/* ── SVG scene ── */}
       <svg
         viewBox={`0 0 ${VB_SIZE} ${VB_SIZE}`}
-        className="h-full w-full"
-        style={{ maxHeight: "680px" }}
-        aria-hidden="true" // interactive stars have their own role="button"
+        width="100%"
+        height="100%"
+        style={{ display: "block", maxHeight: "680px" }}
+        aria-hidden="true"
         focusable="false"
       >
         <defs>

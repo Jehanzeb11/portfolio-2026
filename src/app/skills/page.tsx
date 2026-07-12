@@ -25,7 +25,7 @@ export default function SkillsPage() {
       </div>
 
       {/* Full-width orbit */}
-      <div className="mx-auto w-full max-w-6xl flex-1 px-6 pb-16">
+      <div className="mx-auto w-full max-w-6xl flex-1 px-6 pb-16" style={{ minHeight: "680px" }}>
         <SkillOrbit />
       </div>
     </div>

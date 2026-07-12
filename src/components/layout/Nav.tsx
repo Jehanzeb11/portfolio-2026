@@ -19,7 +19,7 @@ export function Nav() {
 
   return (
     <header
-      className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-white/80 backdrop-blur-md dark:bg-zinc-950/80"
+      className="sticky inset-x-0 top-0 z-50 border-b border-white/10 bg-white/80 backdrop-blur-md dark:bg-zinc-950/80"
       style={{ viewTransitionName: "site-header" }}
     >
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
