@@ -23,8 +23,8 @@ function TimelineEntry({
       {/* dot */}
       <span
         className={`absolute left-0 top-1.5 h-3 w-3 rounded-full border-2 ${item.type === "work"
-            ? "border-indigo-500 bg-indigo-500"
-            : "border-zinc-400 bg-transparent"
+          ? "border-indigo-500 bg-indigo-500"
+          : "border-zinc-400 bg-transparent"
           }`}
       />
       {/* connector line — hidden on last child */}
@@ -51,10 +51,10 @@ export function AboutTimeline() {
         {/* Left — bio */}
         <div>
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 64 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 4 }}
             className="mb-12"
           >
             <p className="mb-2 font-mono text-xs uppercase tracking-widest text-indigo-500">
@@ -64,8 +64,8 @@ export function AboutTimeline() {
               Who I am
             </h2>
             <p className="text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
-              I&apos; am FullStack Developer with 3+ years of experience building scalable web and mobile application susing the MERN
-              stack(MongoDB,Express.js,React.js,Node.js). Proficient in TypeScript, Next.js, ReactNative, and ElasticSearch. Proven track record delivering full-stack portals, projectmanagementsystems, and socialmedia platforms in fast-paced production environments. Open to remote and On-site opportunities.
+              I am a Full Stack Developer with 3+ years of experience building scalable web and mobile applications using the MERN
+              stack (MongoDB, Express.js, React.js, Node.js). Proficient in TypeScript, Next.js, React Native, and ElasticSearch. Proven track record delivering full-stack portals, project management systems, and social media platforms in fast-paced production environments. Open to remote and on-site opportunities.
             </p>
           </motion.div>
 
@@ -102,7 +102,7 @@ export function AboutTimeline() {
         initial={{ opacity: 0, y: 32 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-60px" }}
-        transition={{ duration: 0.6, delay: 0.1 }}
+        transition={{ duration: 4, delay: 0.1 }}
         className="mt-16"
       >
         <SkillOrbit />

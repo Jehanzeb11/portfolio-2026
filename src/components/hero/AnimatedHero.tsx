@@ -81,26 +81,69 @@ function lcg(seed: number) {
   };
 }
 
+// Full-screen stratified slots distributed across the perimeter, wings, and central area
+const SCREEN_SLOTS: Array<{ cx: number; cy: number }> = [
+  // ── Top band (spread across full width) ───────────────────────────────────
+  { cx: 8,  cy: 12 },
+  { cx: 24, cy: 9 },
+  { cx: 39, cy: 7 },
+  { cx: 61, cy: 7 },
+  { cx: 76, cy: 9 },
+  { cx: 92, cy: 12 },
+
+  // ── Middle zone (floating in the central space) ───────────────────────────
+  { cx: 50, cy: 17 },  // upper-center (above "HELLO, I'M")
+  { cx: 31, cy: 37 },  // upper-left flank of heading
+  { cx: 69, cy: 37 },  // upper-right flank of heading
+  { cx: 33, cy: 54 },  // mid-left flank of bio paragraph
+  { cx: 67, cy: 54 },  // mid-right flank of bio paragraph
+  { cx: 50, cy: 75 },  // lower-center (between CTAs and socials)
+
+  // ── Far Left column ───────────────────────────────────────────────────────
+  { cx: 6,  cy: 33 },
+  { cx: 12, cy: 52 },
+  { cx: 7,  cy: 71 },
+
+  // ── Mid-Left wing ─────────────────────────────────────────────────────────
+  { cx: 20, cy: 26 },
+  { cx: 18, cy: 72 },
+
+  // ── Far Right column ──────────────────────────────────────────────────────
+  { cx: 94, cy: 33 },
+  { cx: 88, cy: 52 },
+  { cx: 93, cy: 71 },
+
+  // ── Mid-Right wing ────────────────────────────────────────────────────────
+  { cx: 80, cy: 26 },
+  { cx: 82, cy: 72 },
+
+  // ── Bottom band (spread across full width) ────────────────────────────────
+  { cx: 10, cy: 89 },
+  { cx: 90, cy: 89 },
+];
+
 function buildFloatParams(count: number): FloatParams[] {
   const rand = lcg(0xdeadbeef);
+
   return Array.from({ length: count }, (_, i) => {
-    // spread icons all over — avoid extreme edges
-    const cx = 8 + rand() * 84;
-    const cy = 8 + rand() * 84;
+    // Pick from structured full-screen slots if available; fallback to outer ring
+    const slot = SCREEN_SLOTS[i % SCREEN_SLOTS.length];
+    // Add subtle micro-jitter (±3%) so icons feel organic without clustering
+    const cx = Math.max(5, Math.min(95, slot.cx + (rand() - 0.5) * 1));
+    const cy = Math.max(6, Math.min(94, slot.cy + (rand() - 0.5) * 6));
+
     return {
       cx,
       cy,
-      ax: 28 + rand() * 48,   // drift ±28–76 px horizontally
-      ay: 22 + rand() * 40,   // drift ±22–62 px vertically
+      ax: 8 + rand() * 12,   // drift ±18–42 px horizontally
+      ay: 10 + rand() * 14,   // drift ±14–34 px vertically
       // Different speeds so icons never synchronise
-      wx: 0.18 + rand() * 0.28,
-      wy: 0.14 + rand() * 0.24,
+      wx: 0.16 + rand() * 0.22,
+      wy: 0.12 + rand() * 0.20,
       px: rand() * Math.PI * 2,
       py: rand() * Math.PI * 2,
-      size: 40 + Math.floor(rand() * 20), // 40–60 px
-      // Icons that start in the left 40% of screen are more ghostly
-      // so they don't fight with the text
-      opacity: cx < 42 ? 0.18 + rand() * 0.18 : 0.55 + rand() * 0.35,
+      size: 42 + Math.floor(rand() * 6), // 42–58 px
+      opacity: 0.65 + rand() * 0.2,       // balanced vibrant visibility across whole screen
     };
   });
 }
@@ -113,14 +156,14 @@ const staggerContainer: Variants = {
 };
 
 const fadeUp: Variants = {
-  hidden:  { opacity: 0, y: 24 },
+  hidden: { opacity: 0, y: 24 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
 };
 
 const tooltipV: Variants = {
-  hidden:  { opacity: 0, y: 8,  scale: 0.88 },
-  visible: { opacity: 1, y: 0,  scale: 1,   transition: { duration: 0.18, ease: "easeOut" } },
-  exit:    { opacity: 0, y: 5,  scale: 0.92, transition: { duration: 0.12 } },
+  hidden: { opacity: 0, y: 8, scale: 0.88 },
+  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.18, ease: "easeOut" } },
+  exit: { opacity: 0, y: 5, scale: 0.92, transition: { duration: 0.12 } },
 };
 
 // ─── FloatingIcon ─────────────────────────────────────────────────────────────
@@ -188,7 +231,7 @@ function FloatingIcon({
   const dimmed = isAnySpotlit && !isSpotlit;
 
   // Show tooltip below if icon is in the top 30% of the container
-  const tooltipAbove = posRef.current.y > containerH * 0.30;
+  const tooltipAbove = params.cy > 30;
 
   return (
     <motion.div
@@ -219,11 +262,11 @@ function FloatingIcon({
         whileFocus={reducedMotion ? {} : { scale: 1.35, rotateY: 18, rotateX: -10 }}
         transition={{ type: "spring", stiffness: 440, damping: 22 }}
         onHoverStart={() => setHovered(true)}
-        onHoverEnd={()   => setHovered(false)}
-        onFocus={()      => setHovered(true)}
-        onBlur={()       => setHovered(false)}
-        onClick={()      => onSpotlight(isSpotlit ? null : icon.id)}
-        onKeyDown={(e)   => { if (e.key === "Escape") onSpotlight(null); }}
+        onHoverEnd={() => setHovered(false)}
+        onFocus={() => setHovered(true)}
+        onBlur={() => setHovered(false)}
+        onClick={() => onSpotlight(isSpotlit ? null : icon.id)}
+        onKeyDown={(e) => { if (e.key === "Escape") onSpotlight(null); }}
         aria-pressed={isSpotlit}
         aria-label={`${icon.label}: ${icon.description}`}
         aria-describedby={showTooltip ? tooltipId : undefined}
@@ -288,8 +331,8 @@ function FloatingIcon({
                 <div
                   className="mx-auto mb-0 h-0 w-0"
                   style={{
-                    borderLeft:   "5px solid transparent",
-                    borderRight:  "5px solid transparent",
+                    borderLeft: "5px solid transparent",
+                    borderRight: "5px solid transparent",
                     borderBottom: "5px solid rgba(24,24,27,0.97)",
                   }}
                   aria-hidden="true"
@@ -317,9 +360,9 @@ function FloatingIcon({
                 <div
                   className="mx-auto mt-0 h-0 w-0"
                   style={{
-                    borderLeft:  "5px solid transparent",
+                    borderLeft: "5px solid transparent",
                     borderRight: "5px solid transparent",
-                    borderTop:   "5px solid rgba(24,24,27,0.97)",
+                    borderTop: "5px solid rgba(24,24,27,0.97)",
                   }}
                   aria-hidden="true"
                 />
@@ -339,13 +382,13 @@ export function AnimatedHero({
   icons = TECH_ICONS,
   title = "Jehanzeb Siddiqui",
   subtitle = "Full Stack Developer with 3+ years of experience building scalable web and mobile applications using the MERN stack. Open to remote opportunities.",
-  ctaPrimary   = { label: "View my work",  href: "/work"    },
-  ctaSecondary = { label: "Get in touch",  href: "/contact" },
+  ctaPrimary = { label: "View my work", href: "/work" },
+  ctaSecondary = { label: "Get in touch", href: "/contact" },
   showStars = true,
 }: AnimatedHeroProps) {
   const reducedMotion = useReducedMotion() ?? false;
-  const [spotlitId, setSpotlitId]   = useState<string | null>(null);
-  const baseId      = useId();
+  const [spotlitId, setSpotlitId] = useState<string | null>(null);
+  const baseId = useId();
 
   // Container size — needed to convert % positions → px
   const containerRef = useRef<HTMLElement>(null);
@@ -534,7 +577,7 @@ export function AnimatedHero({
               aria-label="Phone number"
             >
               <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.08 1.2 2 2 0 012.07 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+                <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.08 1.2 2 2 0 012.07 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" />
               </svg>
               +92-345-2077512
             </a>
@@ -546,8 +589,8 @@ export function AnimatedHero({
               aria-label="Email address"
             >
               <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <rect x="2" y="4" width="20" height="16" rx="2"/>
-                <path d="m2 7 10 7 10-7"/>
+                <rect x="2" y="4" width="20" height="16" rx="2" />
+                <path d="m2 7 10 7 10-7" />
               </svg>
               jehanzebsiddiqui20@gmail.com
             </a>
@@ -561,7 +604,7 @@ export function AnimatedHero({
               aria-label="GitHub profile"
             >
               <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0" fill="currentColor" aria-hidden="true">
-                <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+                <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
               </svg>
               github.com/Jehanzeb11
             </a>
@@ -575,7 +618,7 @@ export function AnimatedHero({
               aria-label="LinkedIn profile"
             >
               <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0" fill="currentColor" aria-hidden="true">
-                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
               </svg>
               LinkedIn
             </a>
@@ -589,13 +632,13 @@ export function AnimatedHero({
               aria-label="Portfolio website"
             >
               <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                <circle cx="12" cy="12" r="10" />
+                <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
               </svg>
               jehanzeb.netlify.app
             </a>
           </motion.div>
-{/* 
+          {/* 
           <motion.p variants={fadeUp} className="mt-6 text-xs text-white/20">
             Hover any icon · Click to spotlight · Esc to dismiss
           </motion.p> */}
